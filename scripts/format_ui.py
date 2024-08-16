@@ -42,7 +42,7 @@ re_existing_weight = re.compile(r"(?<=:)(\d+.?\d*|\d*.?\d+)(?=[)\]]$)")
 """
 References
 """
-ui_prompts = []
+ui_prompts = set()
 
 
 """
@@ -429,12 +429,12 @@ def escape_bracket_index(token, symbols, start_index=0):
     return i
 
 
-def format_prompt(*prompts: list):
+def format_prompt(*prompts: tuple[dict]):
     sync_settings()
 
     ret = []
 
-    for prompt in prompts:
+    for component, prompt in prompts[0].items():
         if not prompt or prompt.strip() == "":
             ret.append("")
             continue
@@ -447,8 +447,8 @@ def format_prompt(*prompts: list):
         prompt = remove_whitespace_excessive(prompt)
 
         # Replace Spaces and/or underscores, unless disabled
-        if IGNOREUNDERSCORES == False: prompt = space_to_underscore(prompt)
-            
+        if IGNOREUNDERSCORES == False:
+            prompt = space_to_underscore(prompt)
         prompt = align_brackets(prompt)
         prompt = space_and(prompt)  # for proper compositing alignment on colons
         prompt = space_bracekts(prompt)
@@ -463,21 +463,26 @@ def format_prompt(*prompts: list):
 
 
 def on_before_component(component: gr.component, **kwargs: dict):
-    if "elem_id" in kwargs:
-        if kwargs["elem_id"] in [
+    elem_id = kwargs.get("elem_id", None)
+    if elem_id:
+        if elem_id in [
             "txt2img_prompt",
             "txt2img_neg_prompt",
             "img2img_prompt",
             "img2img_neg_prompt",
         ]:
-            ui_prompts.append(component)
-            return None
-        elif kwargs["elem_id"] == "paste":
+            ui_prompts.add(component)
+
+        elif elem_id == "paste":
             with gr.Blocks(analytics_enabled=False) as ui_component:
                 button = gr.Button(value="🪄", elem_classes="tool", elem_id="format")
-                button.click(fn=format_prompt, inputs=ui_prompts, outputs=ui_prompts)
+                button.click(
+                    fn=format_prompt,
+                    inputs=ui_prompts,
+                    outputs=ui_prompts,
+                )
                 return ui_component
-        return None
+
     return None
 
 
