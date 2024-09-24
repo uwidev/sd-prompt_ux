@@ -457,7 +457,7 @@ def format_prompt(*prompts: tuple[dict]):
         prompt = align_alternating(prompt)
         prompt = bracket_to_weights(prompt)
 
-        ret.append(prompt)
+        ret.append(prompt.strip())
 
     return ret
 
