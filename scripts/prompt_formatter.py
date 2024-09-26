@@ -34,7 +34,7 @@ def format_prompt(*prompts: tuple[dict]):
         prompt = pipeline.remove_whitespace_excessive(prompt)
 
         # Replace Spaces and/or underscores, unless disabled
-        prompt = pipeline.space_to_underscore(prompt, IGNOREUNDERSCORES)
+        prompt = pipeline.space_to_underscore(prompt, opposite=IGNOREUNDERSCORES)
         prompt = pipeline.align_brackets(prompt)
         prompt = pipeline.space_and(
             prompt
