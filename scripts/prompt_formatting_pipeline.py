@@ -14,9 +14,9 @@ re_comma_spacing = re.compile(r",+")
 re_brackets_fix_whitespace = re.compile(r"([\(\[{<])\s*|\s*([\)\]}>}])")
 re_opposing_brackets = re.compile(r"([)\]}>])([([{<])")
 re_networks = re.compile(r"<.+?>")
-re_bracket_open = re.compile(r"[(\[]")
-re_brackets_open = re.compile(r"\(+|\[+")
-re_brackets_closing = re.compile(r"\)+|\]+")
+re_bracket_open = re.compile(r"[(\[](?![^<]*>)")
+re_brackets_open = re.compile(r"\(+|\[+(?![^<]*>])")
+re_brackets_closing = re.compile(r"\)+|\]+(?![^<]*>)")
 re_colon_spacing = re.compile(r"\s*(:)\s*")
 re_colon_spacing_composite = re.compile(r"\s*(:)\s*(?=\d*?\.?\d*?\s*?AND)")
 re_colon_spacing_comp_end = re.compile(r"(?<=AND[^:]*?)(:)(?=[^:]*$)")
@@ -359,6 +359,12 @@ def bracket_to_weights(prompt: str, *, do_it:bool = True):
     depths, gradients, brackets = get_mappings(prompt)
 
     pos = 0
+    match = re_bracket_open.search(prompt, pos)
+
+    if not match:  # no brackets at all
+        return prompt
+
+    pos = match.start()
     ret = prompt
     gradient_search = []
 
