@@ -124,5 +124,7 @@ def test_space_to_underscore():
     assert pipeline.space_to_underscore('one two three') == 'one_two_three'
     assert pipeline.space_to_underscore('this is a test') == 'this_is_a_test'
     assert pipeline.space_to_underscore('<embed:foo bar>, baz') == '<embed:foo bar>, baz'
-    assert pipeline.space_to_underscore('some_var_name', opposite=False) == 'some var name'
+
+    pipeline.BRACKET2WEIGHT = False
+    assert pipeline.space_to_underscore('some_var_name', opposite=pipeline.BRACKET2WEIGHT) == 'some var name'
 

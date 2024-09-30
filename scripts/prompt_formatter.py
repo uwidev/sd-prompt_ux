@@ -43,7 +43,7 @@ def format_prompt(*prompts: tuple[dict]):
         prompt = pipeline.align_colons(prompt)
         prompt = pipeline.align_commas(prompt, do_it=SPACE_COMMAS)
         prompt = pipeline.align_alternating(prompt)
-        prompt = pipeline.bracket_to_weights(prompt)
+        prompt = pipeline.bracket_to_weights(prompt, do_it=BRACKET2WEIGHT)
 
         ret.append(prompt.strip())
 
