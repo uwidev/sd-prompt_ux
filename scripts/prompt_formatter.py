@@ -1,17 +1,16 @@
 """Enter format prompt."""
+
 import gradio as gr
 from modules import script_callbacks, scripts, shared
 
-# from prompt_formatting_pipeline import pipeline
 from scripts import prompt_formatting_pipeline as pipeline
+from scripts.prompt_formatting_definitions import UnderSpaceEnum
 
-"""
-Formatting settings
-"""
 SPACE_COMMAS = True
 BRACKET2WEIGHT = True
-SPACE2UNDERSCORE = False
-IGNOREUNDERSCORES = True
+# SPACE2UNDERSCORE = False
+# IGNOREUNDERSCORES = True
+PREFER_SPACING = UnderSpaceEnum.IGNORE
 
 ui_prompts = set()
 
@@ -34,11 +33,9 @@ def format_prompt(*prompts: tuple[dict]):
         prompt = pipeline.remove_whitespace_excessive(prompt)
 
         # Replace Spaces and/or underscores, unless disabled
-        prompt = pipeline.space_to_underscore(prompt, opposite=IGNOREUNDERSCORES)
+        prompt = pipeline.space_to_underscore(prompt, mode=PREFER_SPACING)
         prompt = pipeline.align_brackets(prompt)
-        prompt = pipeline.space_and(
-            prompt
-        )  # for proper compositing alignment on colons
+        prompt = pipeline.space_and(prompt)  # for proper compositing alignment on colon
         prompt = pipeline.space_bracekts(prompt)
         prompt = pipeline.align_colons(prompt)
         prompt = pipeline.align_commas(prompt, do_it=SPACE_COMMAS)
@@ -76,6 +73,7 @@ def on_before_component(component: gr.component, **kwargs: dict):
 
 def on_ui_settings():
     section = ("pformat", "Prompt Formatter")
+
     shared.opts.add_option(
         "pformat_space_commas",
         shared.OptionInfo(
@@ -96,36 +94,48 @@ def on_ui_settings():
             section=section,
         ),
     )
+    # shared.opts.add_option(
+    #     "pfromat_space2underscore",
+    #     shared.OptionInfo(
+    #         False,
+    #         "Convert spaces to underscores (default: underscore to spaces)",
+    #         gr.Checkbox,
+    #         {"interactive": True},
+    #         section=section,
+    #     ),
+    # )
+    # shared.opts.add_option(
+    #     "pfromat_ignoreunderscores",
+    #     shared.OptionInfo(
+    #         True,
+    #         "Do not convert either spaces or underscores (preserves DanBooru tag formatting)",
+    #         gr.Checkbox,
+    #         {"interactive": True},
+    #         section=section,
+    #     ),
+
+
     shared.opts.add_option(
-        "pfromat_space2underscore",
+        'pformat_preferspacing',
         shared.OptionInfo(
-            False,
-            "Convert spaces to underscores (default: underscore to spaces)",
-            gr.Checkbox,
-            {"interactive": True},
-            section=section,
-        ),
-    )
-    shared.opts.add_option(
-        "pfromat_ignoreunderscores",
-        shared.OptionInfo(
-            True,
-            "Do not convert either spaces or underscores (preserves DanBooru tag formatting)",
-            gr.Checkbox,
-            {"interactive": True},
-            section=section,
-        ),
+            'Space',
+            "Preference in formatter to use spaces or underscore or ignore.",
+            gr.Radio,
+            {"choices": ["Space", "Underscore", "Ignore"]},
+            section=section
+        )
     )
 
     sync_settings()
 
 
 def sync_settings():
-    global SPACE_COMMAS, BRACKET2WEIGHT, SPACE2UNDERSCORE, IGNOREUNDERSCORES
+    global SPACE_COMMAS, BRACKET2WEIGHT, SPACE2UNDERSCORE, IGNOREUNDERSCORES, PREFER_SPACING
     SPACE_COMMAS = shared.opts.pformat_space_commas
     BRACKET2WEIGHT = shared.opts.pfromat_bracket2weight
-    SPACE2UNDERSCORE = shared.opts.pfromat_space2underscore
-    IGNOREUNDERSCORES = shared.opts.pfromat_ignoreunderscores
+    # SPACE2UNDERSCORE = shared.opts.pfromat_space2underscore
+    # IGNOREUNDERSCORES = shared.opts.pfromat_ignoreunderscores
+    PREFER_SPACING = UnderSpaceEnum(shared.opts.pformat_preferspacing)
 
 
 script_callbacks.on_before_component(on_before_component)

@@ -4,6 +4,8 @@ import unicodedata
 
 import regex as re
 
+from scripts.prompt_formatting_definitions import UnderSpaceEnum
+
 brackets_opening = "([{<"
 brackets_closing = ")]}>"
 
@@ -463,9 +465,7 @@ def calculate_weight(d: str, *, is_square_brackets: bool):
     return 1 / 1.1 ** int(d) if is_square_brackets else 1 * 1.1 ** int(d)
 
 
-
-
-def space_to_underscore(prompt: str, *, opposite = True):
+def space_to_underscore(prompt: str, mode: UnderSpaceEnum = UnderSpaceEnum.SPACE):
     """Replace space with underscore or vice versa.
 
     It's a but funky right now because it uses the tokenizer to chunk for sub.
@@ -475,15 +475,18 @@ def space_to_underscore(prompt: str, *, opposite = True):
     This has been patched by requiring the match to be surrounded with a
     character, but I'm sure there's better solutions. It will work for now.
     """
-    match = (
-        r"(?<!BREAK)(?<=\w) +(?=\w)(?!BREAK)(?![^<]*>)"
-        if opposite
-        else r"(?<!BREAK)(?<=\w)_+(?=\w)(?!BREAK)(?![^<]*>)"
-    )
-    replace = "_" if opposite else " "
+    if mode == UnderSpaceEnum.IGNORE:
+      return prompt
+
+    if mode == UnderSpaceEnum.SPACE:
+       match = r"(?<!BREAK)(?<=\w)_+(?=\w)(?!BREAK)(?![^<]*>)"
+       replace = " "
+
+    elif mode == UnderSpaceEnum.UNDERSCORE:
+       match = r"(?<!BREAK)(?<=\w) +(?=\w)(?!BREAK)(?![^<]*>)"
+       replace = "_"
 
     tokens: str = tokenize(prompt)
-    print(tokens)
 
     return ",".join(map(lambda t: re.sub(match, replace, t), tokens))
 

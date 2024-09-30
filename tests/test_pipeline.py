@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from scripts import prompt_formatting_pipeline as pipeline
+from scripts.prompt_formatting_definitions import UnderSpaceEnum
 
 
 def test_get_bracket_closing():
@@ -120,11 +121,10 @@ def test_bracket_to_weights():
     assert pipeline.bracket_to_weights('((a), ((b)))') == '((a:1.10), (b:1.21):1.10)'
 
 def test_space_to_underscore():
-    assert pipeline.space_to_underscore('<lora:chicken butt>, multiple subjects') == '<lora:chicken butt>, multiple_subjects'
-    assert pipeline.space_to_underscore('one two three') == 'one_two_three'
-    assert pipeline.space_to_underscore('this is a test') == 'this_is_a_test'
-    assert pipeline.space_to_underscore('<embed:foo bar>, baz') == '<embed:foo bar>, baz'
+    assert pipeline.space_to_underscore('<lora:chicken butt>, multiple subjects') == '<lora:chicken butt>, multiple subjects'
+    assert pipeline.space_to_underscore('one_two_three') == 'one two three'
+    assert pipeline.space_to_underscore('this is_a test') == 'this is a test'
+    assert pipeline.space_to_underscore('<embed:foo bar>, baz', UnderSpaceEnum.IGNORE) == '<embed:foo bar>, baz'
 
-    pipeline.BRACKET2WEIGHT = False
-    assert pipeline.space_to_underscore('some_var_name', opposite=pipeline.BRACKET2WEIGHT) == 'some var name'
+    assert pipeline.space_to_underscore('one two three', UnderSpaceEnum.UNDERSCORE) == 'one_two_three'
 
